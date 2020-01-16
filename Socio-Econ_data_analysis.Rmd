@@ -1,0 +1,193 @@
+---
+title: "Socio-Economic Data Analysis"
+author: "Arnab Mukherjee"
+date: "16 January 2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is an exploratory data analysis on socio-economic data collected by Mr.Arup Dhar on the Toto tribe. This one of its kind data contains a detailed 206 household data among 340 odd households of this particular community.This data analysis serves the purpose of shedding light on the sanitation problem of the tribe. First due to technical constraints we reduced the dataset to 13 variables (we have selected the ones that describes most of the variablity of the dataset).
+
+First lets load and get some basic idea of the data
+
+```{r cars}
+library(readxl)
+data <- read_excel("C:/Machine Learning/Datasets/Socio-Econ_data.xlsx")
+head(data) #loading top of the dataset
+```
+First we remove the missing values as the number of values missing is low we can afford to do that
+
+```{r}
+data = na.omit(data)
+
+```
+
+Next we start categorical data analysis
+```{r}
+library("inspectdf")
+library("dplyr")
+data %>% inspect_types() 
+data_cat = data %>% inspect_cat()
+data_cat
+```
+```{r echo=FALSE}
+data_cat %>% show_plot()
+```
+
+Now we are here trying to answer 3 question we will use to answer them using categorical hypothesis testing.
+
+#### Question-1:
+Sanitary toilet presence and Education are they independent?
+
+
+```{r}
+a_00 = 0
+a_10 = 0
+a_01 = 0
+a_11 = 0
+for(i in c(1:162)){
+  if(data[i,5] == "ILLITERATE"){
+    if(data[i,12]== "Y"){
+      a_01=a_01+1
+    }
+    else{
+      a_00 = a_00 +1
+    }
+  }
+  else if(data[i,12]=="Y"){
+    a_11 = a_11+1
+    
+  }
+  else{
+    a_10 = a_10+1
+  }
+}
+
+
+a_00
+a_10
+a_01
+a_11
+tab_1 = matrix(c(a_00,a_01,a_10,a_11),nrow = 2, ncol  = 2,byrow = TRUE)
+tab_1 = as.table(tab_1)
+tab_1
+```
+Testing of Hypothesis
+```{r}
+chisq.test(tab_1)
+```
+
+So here we performed pearson's chisquare test of independence and as we can see at 95% confidence level there's not significant evidence to reject the null hypothesis that sanitary toilet presence and education are independent
+
+```{r}
+library("DescTools")
+GTest(tab_1)
+```
+
+Here we peformed log likelihood ratio test of independence and again we can see that although the p-value is low still there's not sufficient evidence to reject the null
+
+
+#### Question-2:
+Sanitary toilet presence and marital status are they independent?
+
+```{r}
+a_00 = 0
+a_10 = 0
+a_01 = 0
+a_11 = 0
+for(i in c(1:162)){
+  if(data[i,6] == "UNMARRIED"){
+    if(data[i,12]== "Y"){
+      a_01=a_01+1
+    }
+    else{
+      a_00 = a_00 +1
+    }
+  }
+  else if(data[i,12]=="Y"){
+    a_11 = a_11+1
+    
+  }
+  else{
+    a_10 = a_10+1
+  }
+}
+
+
+a_00
+a_10
+a_01
+a_11
+tab_2 = matrix(c(a_00,a_01,a_10,a_11),nrow = 2, ncol  = 2,byrow = TRUE)
+tab_2 = as.table(tab_2)
+tab_2
+```
+
+Testing of hypothesis:
+```{r}
+chisq.test(tab_2)
+```
+
+```{r}
+library("DescTools")
+GTest(tab_2)
+```
+Again as we can see from both pearson's chisquare and log-likelihood test there's not sufficient evidence to reject the null hypothesis that marital status and sanitary toilet presence are independent.
+
+#### Question-3:
+Defacation practice and education are they independent?
+
+```{r}
+a_00 = 0
+a_10 = 0
+a_01 = 0
+a_11 = 0
+for(i in c(1:162)){
+  if(data[i,5] == "ILLITERATE"){
+    if(data[i,13]== "in your own latrine"){
+      a_01=a_01+1
+    }
+    else{
+      a_00 = a_00 +1
+    }
+  }
+  else if(data[i,13]=="in your own latrine"){
+    a_11 = a_11+1
+    
+  }
+  else{
+    a_10 = a_10+1
+  }
+}
+
+
+a_00
+a_10
+a_01
+a_11
+tab_3 = matrix(c(a_00,a_01,a_10,a_11),nrow = 2, ncol  = 2,byrow = TRUE)
+tab_3 = as.table(tab_3)
+tab_3
+```
+
+Testing of Hypothesis:
+
+```{r}
+chisq.test(tab_3)
+```
+
+```{r}
+
+library("DescTools")
+GTest(tab_3)
+```
+
+So it is evident from the log likelihood ration test and pearson's chi square test that there isn't sufficient evidence to reject the null hypothesis that defacation practice are independent.
+
+
+
+##### Remark:
+So as we can see that independence test fails to reject all 3 null hypothesis which implies that given the data we can safely say that "Toto" tribals have innate sense of sanitation(having sanitation room in home and using it) independent of their education or marital status.
